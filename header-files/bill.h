@@ -44,6 +44,7 @@ void displayBills(Bill*);
 
 void displayMissingBills(Bill*);
 
+void checkBills(Bill*, FILE*);
 
 #ifdef __cplusplus
 }

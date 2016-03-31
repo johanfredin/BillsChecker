@@ -91,3 +91,20 @@ void displayMissingBills(Bill *bill) {
         bill = bill->next;
     } 
 }
+
+void checkBills(Bill* bill, FILE* transactionsFile) {
+    short checkSum = 0;
+    char currentLine[250];
+    while(fscanf(transactionsFile, "%250[^\n]\n", currentLine) == 1) {
+       checkSum += checkBill(bill, currentLine);
+    }
+
+    // time to check if we paid the bills!
+    if(checkSum <= 0) {
+        puts("All bills paid, good job pal!");
+    } else {
+        puts("Missing bills");
+        puts("-------------");
+        displayMissingBills(bill);
+    }
+}

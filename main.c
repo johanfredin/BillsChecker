@@ -11,8 +11,12 @@
  * Created on February 25, 2016, 9:44 PM
  */
 #include "header-files/bill.h"
+#include "header-files/helper.h"
 
 short verboseOptionEnabled = 0;
+
+const short ARG_IDX_BILLS_NEEDED = 0;
+const short ARG_IDX_TRANSACTIONS = 1;
 
 FILE* openFile(char*);
 void checkBills(Bill*, FILE* file);
@@ -21,12 +25,17 @@ void checkBills(Bill*, FILE* file);
  * 
  */
 int main(int argc, char** argv) {
-    
+
+    def_args defaults = getDefaults();
+
+    char * arguments[2] = {NULL, NULL};
+    transferCommandLineArguments(argc, argv, arguments);
+
     // Retrieve the file containing required bills
-    char *neededBillsFileDir = "resources/BillsNeeded.csv"; //argv[1];
+    char *neededBillsFileDir = getArgvalueOrDefault(arguments[ARG_IDX_BILLS_NEEDED], defaults.DEFAULT_BILLS_NEEDED_FILE);
     
     // Retrieve the file containing the current bills
-    char *billsFileDir = argv[2];
+    char *billsFileDir = getArgvalueOrDefault(arguments[ARG_IDX_TRANSACTIONS], defaults.DEFAULT_TRANSACTIONS_FILE); //
     
     FILE *requiredBillsFile = openFile(neededBillsFileDir);
     FILE *transactionsFile = openFile(billsFileDir);
@@ -37,11 +46,15 @@ int main(int argc, char** argv) {
     }
     
     // Retrieve the first bill and make a linked list
-    Bill *bill = getLinkedBillsFromFile(fopen(neededBillsFileDir, "r"));
-    
+    Bill *bill = getLinkedBillsFromFile(requiredBillsFile);
+
+    fclose(requiredBillsFile);
+
     // Check if we missed any bills
     checkBills(bill, transactionsFile);
-   
+
+    fclose(transactionsFile);
+
     // Finally remove the bills
     removeBills(bill);
      
@@ -49,32 +62,7 @@ int main(int argc, char** argv) {
     
 }
 
-FILE* openFile(char* directory) {
-    FILE* file = fopen(directory, "r");
-    if(file == NULL) {
-        fprintf(stderr, "Can't open the file %s.\n", directory); 
-    }
-    return file;
-}
 
-void checkBills(Bill* bill, FILE* transactionsFile) {
-    short checkSum = 0;
-    char currentLine[250];
-    while(fscanf(transactionsFile, "%250[^\n]\n", currentLine) == 1) {
-        if(verboseOptionEnabled) {
-            puts(currentLine);
-        }
-        checkSum += checkBill(bill, currentLine);
-    }
-        
-    // time to check if we paid the bills!
-    if(checkSum <= 0) {
-        puts("All bills paid, good job pal!");
-    } else {
-        puts("Missing bills");
-        puts("-------------");
-        displayMissingBills(bill);
-    }
-}
+
 
 
